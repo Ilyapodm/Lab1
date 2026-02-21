@@ -35,6 +35,7 @@
 *.i*86
 *.x86_64
 *.hex
+a.out
 
 # Debug files
 *.dSYM/
@@ -56,4 +57,11 @@ dkms.conf
 
 .DS_Store
 .idea/
+build/
+.vscode/
 cmake-build-*/
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+.cache/
