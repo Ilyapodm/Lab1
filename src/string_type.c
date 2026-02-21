@@ -1,6 +1,9 @@
 #include "string_type.h"
-#include "type_info.h"
+
+#include <stdlib.h>
 #include <string.h>
+#include "type_info.h"
+
 
 // Initializing the field of TypeInfo for Strings
 static const TypeInfo StringType = {

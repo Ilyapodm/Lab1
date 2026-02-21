@@ -1,7 +1,6 @@
 #ifndef TYPE_INFO_H
 #define TYPE_INFO_H
 
-#include <stdlib.h>
 #include <stddef.h>  
 
 
