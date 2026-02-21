@@ -1,11 +1,14 @@
-# Подключаем заголовочные файлы из src
+# Путь к заголовочным файлам из src
 include_directories(../src)
 
-# Создаём исполняемый файл для тестов
-add_executable(test_dynamic_array test_dynamic_array.c)
+# Тест из тестового файла + всех .c файлов
+add_executable(test_dynamic_array
+    test_dynamic_array.c
+    ../src/dynamic_array.c
+    ../src/real_type.c
+    ../src/string_type.c
+    ../src/mappers.c
+)
 
-# Линкуем библиотеку
-target_link_libraries(test_dynamic_array dynamic_array)
-
-# Регистрируем тест в CTest
+# Регистрируем тест для ctest
 add_test(NAME test_dynamic_array COMMAND test_dynamic_array)
