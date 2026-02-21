@@ -3,7 +3,6 @@
 
 #include <stddef.h>  
 
-
 // General type description
 typedef struct {
     size_t item_size;

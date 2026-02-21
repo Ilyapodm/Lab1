@@ -4,7 +4,6 @@
 #include <string.h>
 #include "type_info.h"
 
-
 // Initializing the field of TypeInfo for Strings
 static const TypeInfo StringType = {
     .item_size = sizeof(char*), // 8 bytes, not a 
