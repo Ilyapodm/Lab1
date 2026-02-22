@@ -5,7 +5,6 @@
 #include "../src/dynamic_array.h"
 #include "../src/real_type.h"
 #include "../src/string_type.h"
-#include "../src/mappers.h"
 
 /********************************************************************
  * Tests of Dynamic Array with Real Numbers
@@ -17,10 +16,9 @@ void test_create_destroy_real() {
     
     DynamicArray* arr = dyn_array_create(ofReal());
     assert(arr != NULL);
-    assert(arr->size == 0);
-    assert(arr->capacity == 0);
-    assert(arr->data == NULL);
-    assert(arr->type == ofReal());
+    assert(dyn_array_size(arr) == 0);
+    assert(dyn_array_capacity(arr) == 0);
+    assert(dyn_array_type(arr) == ofReal());
     
     dyn_array_destroy(arr);
     printf(" OK\n");
@@ -35,12 +33,12 @@ void test_push_back_real() {
     double val1 = 3.14;
     int result = dyn_array_push_back(arr, &val1);
     assert(result == 0);
-    assert(arr->size == 1);
+    assert(dyn_array_size(arr) == 1);
     
     double val2 = 2.71;
     result = dyn_array_push_back(arr, &val2);
     assert(result == 0);
-    assert(arr->size == 2);
+    assert(dyn_array_size(arr) == 2);
     
     const double* retrieved = dyn_array_get(arr, 0);
     assert(retrieved != NULL);
@@ -69,12 +67,12 @@ void test_pop_real() {
     int result = dyn_array_pop(arr, &popped);
     assert(result == 1);
     assert(popped == 20.3);
-    assert(arr->size == 1);
+    assert(dyn_array_size(arr) == 1);
     
     result = dyn_array_pop(arr, &popped);
     assert(result == 1);
     assert(popped == 10.5);
-    assert(arr->size == 0);
+    assert(dyn_array_size(arr) == 0);
     
     result = dyn_array_pop(arr, &popped);
     assert(result == 0);
@@ -126,7 +124,7 @@ void test_map_real() {
     
     DynamicArray* mapped = dyn_array_map(arr, real_map_multiply);
     assert(mapped != NULL);
-    assert(mapped->size == 3);
+    assert(dyn_array_size(mapped) == 3);
     
     const double* elem;
     elem = dyn_array_get(mapped, 0); assert(*elem == 2.0);
@@ -151,7 +149,7 @@ void test_where_real() {
     
     DynamicArray* filtered = dyn_array_where(arr, is_positive);
     assert(filtered != NULL);
-    assert(filtered->size == 3);
+    assert(dyn_array_size(filtered) == 3);
     
     const double* elem;
     elem = dyn_array_get(filtered, 0); assert(*elem == 3.0);
@@ -178,7 +176,7 @@ void test_concat_real() {
     
     DynamicArray* concatenated = dyn_array_concat(arr1, arr2);
     assert(concatenated != NULL);
-    assert(concatenated->size == 5);
+    assert(dyn_array_size(concatenated) == 5);
     
     const double* elem;
     elem = dyn_array_get(concatenated, 0); assert(*elem == 1.0);
@@ -206,8 +204,8 @@ void test_shrink_to_fit_real() {
     
     int result = dyn_array_shrink_to_fit(arr);
     assert(result == 1);
-    assert(arr->capacity == arr->size);
-    assert(arr->capacity == 3);
+    assert(dyn_array_capacity(arr) == dyn_array_size(arr));
+    assert(dyn_array_capacity(arr) == 3);
     
     dyn_array_destroy(arr);
     printf(" OK\n");
@@ -223,10 +221,9 @@ void test_create_destroy_string() {
     
     DynamicArray* arr = dyn_array_create(ofString());
     assert(arr != NULL);
-    assert(arr->size == 0);
-    assert(arr->capacity == 0);
-    assert(arr->data == NULL);
-    assert(arr->type == ofString());
+    assert(dyn_array_size(arr) == 0);
+    assert(dyn_array_capacity(arr) == 0);
+    assert(dyn_array_type(arr) == ofString());
     
     dyn_array_destroy(arr);
     printf(" OK\n");
@@ -237,17 +234,14 @@ void test_push_back_string() {
     printf("Test 10: Push back (string)...");
     
     DynamicArray* arr = dyn_array_create(ofString());
-    
-    char* str1 = strdup("hello");
-    char* str2 = strdup("world");
-    
-    int result = dyn_array_push_back(arr, &str1);
+
+    int result = dyn_array_push_back(arr, "hello");
     assert(result == 0);
-    assert(arr->size == 1);
+    assert(dyn_array_size(arr) == 1);
     
-    result = dyn_array_push_back(arr, &str2);
+    result = dyn_array_push_back(arr, "world");
     assert(result == 0);
-    assert(arr->size == 2);
+    assert(dyn_array_size(arr) == 2);
     
     const char* const* retrieved = dyn_array_get(arr, 0);
     assert(retrieved != NULL);
@@ -267,25 +261,22 @@ void test_pop_string() {
     
     DynamicArray* arr = dyn_array_create(ofString());
     
-    char* str1 = strdup("first");
-    char* str2 = strdup("second");
-    
-    dyn_array_push_back(arr, &str1);
-    dyn_array_push_back(arr, &str2);
+    dyn_array_push_back(arr, "first");
+    dyn_array_push_back(arr, "second");
     
     char* popped = NULL;
     int result = dyn_array_pop(arr, &popped);
     assert(result == 1);
     assert(popped != NULL);
     assert(strcmp(popped, "second") == 0);
-    assert(arr->size == 1);
+    assert(dyn_array_size(arr) == 1);
     free(popped);
     
     result = dyn_array_pop(arr, &popped);
     assert(result == 1);
     assert(popped != NULL);
     assert(strcmp(popped, "first") == 0);
-    assert(arr->size == 0);
+    assert(dyn_array_size(arr) == 0);
     free(popped);
     
     dyn_array_destroy(arr);
@@ -298,9 +289,9 @@ void test_sort_string() {
     
     DynamicArray* arr = dyn_array_create(ofString());
     
-    char* strs[] = {strdup("banana"), strdup("apple"), strdup("cherry")};
+    char* strs[] = {"banana", "apple", "cherry"};
     for (int i = 0; i < 3; i++) {
-        dyn_array_push_back(arr, &strs[i]);
+        dyn_array_push_back(arr, strs[i]);
     }
     
     dyn_array_sort_asc(arr);
@@ -324,15 +315,15 @@ void test_map_string() {
     
     DynamicArray* arr = dyn_array_create(ofString());
     
-    char* strs[] = {strdup("hello"), strdup("World"), strdup("TEST")};
+    char* strs[] = {"hello", "World", "TEST"};
     for (int i = 0; i < 3; i++) {
-        dyn_array_push_back(arr, &strs[i]);
+        dyn_array_push_back(arr, strs[i]);
     }
     
     // Test: upper
     DynamicArray* mapped_upper = dyn_array_map(arr, string_map_to_upper);
     assert(mapped_upper != NULL);
-    assert(mapped_upper->size == 3);
+    assert(dyn_array_size(mapped_upper) == 3);
     
     const char* const* elem;
     elem = dyn_array_get(mapped_upper, 0); assert(strcmp(*elem, "HELLO") == 0);
@@ -342,7 +333,7 @@ void test_map_string() {
     // Test: Lower
     DynamicArray* mapped_lower = dyn_array_map(arr, string_map_to_lower);
     assert(mapped_lower != NULL);
-    assert(mapped_lower->size == 3);
+    assert(dyn_array_size(mapped_lower) == 3);
     
     elem = dyn_array_get(mapped_lower, 0); assert(strcmp(*elem, "hello") == 0);
     elem = dyn_array_get(mapped_lower, 1); assert(strcmp(*elem, "world") == 0);
@@ -360,14 +351,14 @@ void test_where_string() {
     
     DynamicArray* arr = dyn_array_create(ofString());
     
-    char* strs[] = {strdup("apple"), strdup(""), strdup("banana"), strdup("avocado")};
+    char* strs[] = {"apple", "", "banana", "avocado"};
     for (int i = 0; i < 4; i++) {
-        dyn_array_push_back(arr, &strs[i]);
+        dyn_array_push_back(arr, strs[i]);
     }
     
     DynamicArray* filtered = dyn_array_where(arr, string_starts_with_a);
     assert(filtered != NULL);
-    assert(filtered->size == 2);
+    assert(dyn_array_size(filtered) == 2);
     
     const char* const* elem;
     elem = dyn_array_get(filtered, 0); assert(strcmp(*elem, "apple") == 0);

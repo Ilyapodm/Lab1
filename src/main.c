@@ -5,27 +5,10 @@
 #include "dynamic_array.h"
 #include "real_type.h"
 #include "string_type.h"
-#include "mappers.h"
 
 /********************************************************************
  *Utils for Real Numbers 
  *******************************************************************/
-
-// TODO Вывод/ввод лучше реализовать в самом объекте поле (typeinfo) (набор принтеров в разные места)
-void print_real_array(const DynamicArray* arr) {
-    if (!arr || arr->size == 0) {
-        printf("Массив пуст.\n");
-        return;
-    }
-    
-    printf("[");
-    for (size_t i = 0; i < arr->size; i++) {
-        const double* val = dyn_array_get(arr, i);
-        printf("%.2f", *val);
-        if (i < arr->size - 1) printf(", ");
-    }
-    printf("]\n");
-}
 
 void add_real_element(DynamicArray* arr) {
     double value;
@@ -37,13 +20,15 @@ void add_real_element(DynamicArray* arr) {
     }
     if (dyn_array_push_back(arr, &value) == 0) {
         printf("Элемент добавлен.\n");
+        while (getchar() != '\n');
     } else {
         printf("Ошибка добавления элемента.\n");
+        while (getchar() != '\n');
     }
 }
 
 void pop_real_element(DynamicArray* arr) {
-    if (arr->size == 0) {
+    if (dyn_array_size(arr) == 0) {
         printf("Массив пуст!\n");
         return;
     }
@@ -58,8 +43,8 @@ void pop_real_element(DynamicArray* arr) {
 
 void get_real_element(DynamicArray* arr) {
     size_t index;
-    printf("Введите индекс (0-%zu): ", arr->size - 1);
-    if (scanf("%zu", &index) != 1 || index >= arr->size) {
+    printf("Введите индекс (0-%zu): ", dyn_array_size(arr) - 1);
+    if (scanf("%zu", &index) != 1 || index >= dyn_array_size(arr)) {
         printf("Неверный индекс!\n");
         while (getchar() != '\n');
         return;
@@ -67,26 +52,12 @@ void get_real_element(DynamicArray* arr) {
     
     const double* val = dyn_array_get(arr, index);
     printf("Элемент[%zu] = %.2f\n", index, *val);
+    while (getchar() != '\n');
 }
 
 /********************************************************************
  *Utils for Strings 
  *******************************************************************/
-void print_string_array(const DynamicArray* arr) {
-    if (!arr || arr->size == 0) {
-        printf("Массив пуст.\n");
-        return;
-    }
-    
-    printf("[");
-    for (size_t i = 0; i < arr->size; i++) {
-        const char* const* str_ptr = (const char* const*)dyn_array_get(arr, i);
-        const char* str = *str_ptr;
-        printf("\"%s\"", str ? str : "NULL");
-        if (i < arr->size - 1) printf(", ");
-    }
-    printf("]\n");
-}
 
 void add_string_element(DynamicArray* arr) {
     char buffer[1024];
@@ -100,23 +71,15 @@ void add_string_element(DynamicArray* arr) {
     // Delete the \n
     buffer[strcspn(buffer, "\n")] = '\0'; // strcspn return the first index of the \n
     
-    char* str = strdup(buffer); // malloc + strcpy
-    if (!str) {
-        printf("Ошибка выделения памяти!\n");
-        return;
-    }
-    
-    if (dyn_array_push_back(arr, &str) == 0) {
+    if (dyn_array_push_back(arr, buffer) == 0) {
         printf("Строка добавлена.\n");
-        free(str);
     } else {
-        free(str);
         printf("Ошибка добавления строки.\n");
     }
 }
 
 void pop_string_element(DynamicArray* arr) {
-    if (arr->size == 0) {
+    if (dyn_array_size(arr) == 0) {
         printf("Массив пуст!\n");
         return;
     }
@@ -131,12 +94,13 @@ void pop_string_element(DynamicArray* arr) {
     } else {
         printf("Ошибка удаления.\n");
     }
+    free(popped);
 }
 
 void get_string_element(DynamicArray* arr) {
     size_t index;
-    printf("Введите индекс (0-%zu): ", arr->size - 1);
-    if (scanf("%zu", &index) != 1 || index >= arr->size) {
+    printf("Введите индекс (0-%zu): ", dyn_array_size(arr) - 1);
+    if (scanf("%zu", &index) != 1 || index >= dyn_array_size(arr)) {
         printf("Неверный индекс!\n");
         while (getchar() != '\n');
         return;
@@ -146,14 +110,14 @@ void get_string_element(DynamicArray* arr) {
     const char* const* str_ptr = (const char* const*)dyn_array_get(arr, index); 
     const char* str = *str_ptr;
     printf("Элемент[%zu] = \"%s\"\n", index, str ? str : "NULL");
+    while (getchar() != '\n');
 }
 
-
 /********************************************************************
- * Main Menu Usils
+ * Main Menu Utils 
  *******************************************************************/
 void wait_for_enter() {
-    printf("\nНажмите Enter для продолжения...");
+    printf("\nНажмите Enter для продолжения...\n");
     while (getchar() != '\n');
 }
 
@@ -176,14 +140,13 @@ void double_array_menu() {
         return;
     }
     
-    int choice = -1;
     int running = 1;
     
     while (running) {
         clear_screen();
         printf("===== МЕНЮ РАБОТЫ С МАССИВОМ ЧИСЕЛ (double) =====\n\n");
         printf("Текущий массив: ");
-        print_real_array(arr);
+        dyn_array_print(arr);
         printf("\n");
         printf("1. Добавить элемент\n");
         printf("2. Удалить последний элемент (pop)\n");
@@ -201,12 +164,14 @@ void double_array_menu() {
         printf("0. Выйти (массив будет уничтожен)\n");
         printf("\nВыберите действие: ");
         
-        // choice написать сюда 
+        int choice = -1;
+        
         if (scanf("%d", &choice) != 1) {
             while (getchar() != '\n');
             continue;
         }
 
+        while (getchar() != '\n'); // Immediately clear the buffer
         
         switch (choice) {
             case 1:
@@ -220,7 +185,7 @@ void double_array_menu() {
                 break;
                 
             case 3:
-                if (arr->size > 0) {
+                if (dyn_array_size(arr) > 0) {
                     get_real_element(arr);
                 } else {
                     printf("Массив пуст!\n");
@@ -259,7 +224,7 @@ void double_array_menu() {
                 DynamicArray* mapped = dyn_array_map(arr, real_map_multiply);
                 if (mapped) {
                     printf("Результат map (умножить на 2):\n");
-                    print_real_array(mapped);
+                    dyn_array_print(mapped);
                     dyn_array_destroy(mapped);
                 } else {
                     printf("Ошибка map.\n");
@@ -272,7 +237,7 @@ void double_array_menu() {
                 DynamicArray* mapped = dyn_array_map(arr, real_map_square);
                 if (mapped) {
                     printf("Результат map (в квадрате):\n");
-                    print_real_array(mapped);
+                    dyn_array_print(mapped);
                     dyn_array_destroy(mapped);
                 } else {
                     printf("Ошибка map.\n");
@@ -285,7 +250,7 @@ void double_array_menu() {
                 DynamicArray* mapped = dyn_array_map(arr, real_map_add_one);
                 if (mapped) {
                     printf("Результат map (+1):\n");
-                    print_real_array(mapped);
+                    dyn_array_print(mapped);
                     dyn_array_destroy(mapped);
                 } else {
                     printf("Ошибка map.\n");
@@ -298,7 +263,7 @@ void double_array_menu() {
                 DynamicArray* filtered = dyn_array_where(arr, is_positive);
                 if (filtered) {
                     printf("Результат where (только положительные):\n");
-                    print_real_array(filtered);
+                    dyn_array_print(filtered);
                     dyn_array_destroy(filtered);
                 } else {
                     printf("Ошибка where.\n");
@@ -311,7 +276,7 @@ void double_array_menu() {
                 DynamicArray* filtered = dyn_array_where(arr, is_negative);
                 if (filtered) {
                     printf("Результат where (только отрицательные):\n");
-                    print_real_array(filtered);
+                    dyn_array_print(filtered);
                     dyn_array_destroy(filtered);
                 } else {
                     printf("Ошибка where.\n");
@@ -328,6 +293,7 @@ void double_array_menu() {
                 int num_elements;
                 printf("Сколько элементов добавить во второй массив? ");
                 if (scanf("%d", &num_elements) == 1 && num_elements > 0) {
+                    while (getchar() != '\n'); // Clear the buffer before cycle
                     for (int i = 0; i < num_elements; i++) {
                         double val;
                         printf("  Элемент %d: ", i + 1);
@@ -339,7 +305,7 @@ void double_array_menu() {
                     DynamicArray* concatenated = dyn_array_concat(arr, arr2);
                     if (concatenated) {
                         printf("Результат конкатенации:\n");
-                        print_real_array(concatenated);
+                        dyn_array_print(concatenated);
                         dyn_array_destroy(concatenated);
                     } else {
                         printf("Ошибка конкатенации.\n");
@@ -376,14 +342,13 @@ void string_array_menu() {
         return;
     }
     
-    int choice;
     int running = 1;
     
     while (running) {
         clear_screen();
         printf("===== МЕНЮ РАБОТЫ С МАССИВОМ СТРОК (char*) =====\n\n");
         printf("Текущий массив: ");
-        print_string_array(arr);
+        dyn_array_print(arr);
         printf("\n");
         printf("1. Добавить строку\n");
         printf("2. Удалить последнюю строку (pop)\n");
@@ -399,6 +364,8 @@ void string_array_menu() {
         printf("12. Конкатенация с другим массивом\n");
         printf("0. Выйти (массив будет уничтожен)\n");
         printf("\nВыберите действие: ");
+        
+        int choice = -1;
         
         if (scanf("%d", &choice) != 1) {
             while (getchar() != '\n');
@@ -420,7 +387,7 @@ void string_array_menu() {
                 break;
                 
             case 3:
-                if (arr->size > 0) {
+                if (dyn_array_size(arr) > 0) {
                     get_string_element(arr);
                 } else {
                     printf("Массив пуст!\n");
@@ -459,7 +426,7 @@ void string_array_menu() {
                 DynamicArray* mapped = dyn_array_map(arr, string_map_to_upper);
                 if (mapped) {
                     printf("Результат map (в верхний регистр):\n");
-                    print_string_array(mapped);
+                    dyn_array_print(mapped);
                     dyn_array_destroy(mapped);
                 } else {
                     printf("Ошибка map.\n");
@@ -471,7 +438,7 @@ void string_array_menu() {
                 DynamicArray* mapped = dyn_array_map(arr, string_map_to_lower);
                 if (mapped) {
                     printf("Результат map (в нижний регистр):\n");
-                    print_string_array(mapped);
+                    dyn_array_print(mapped);
                     dyn_array_destroy(mapped);
                 } else {
                     printf("Ошибка map.\n");
@@ -484,7 +451,7 @@ void string_array_menu() {
                 DynamicArray* filtered = dyn_array_where(arr, string_not_empty);
                 if (filtered) {
                     printf("Результат where (непустые строки):\n");
-                    print_string_array(filtered);
+                    dyn_array_print(filtered);
                     dyn_array_destroy(filtered);
                 } else {
                     printf("Ошибка where.\n");
@@ -497,7 +464,7 @@ void string_array_menu() {
                 DynamicArray* filtered = dyn_array_where(arr, string_starts_with_a);
                 if (filtered) {
                     printf("Результат where (начинаются с 'a'/'A'):\n");
-                    print_string_array(filtered);
+                    dyn_array_print(filtered);
                     dyn_array_destroy(filtered);
                 } else {
                     printf("Ошибка where.\n");
@@ -521,18 +488,15 @@ void string_array_menu() {
                         char buffer[1024];
                         printf("  Строка %d: ", i + 1);
                         if (fgets(buffer, sizeof(buffer), stdin)) {
-                            buffer[strcspn(buffer, "\n")] = '\0';
-                            char* str = strdup(buffer);
-                            if (str) {
-                                dyn_array_push_back(arr2, &str);
-                            }
+                            buffer[strcspn(buffer, "\n")] = '\0';    
+                            dyn_array_push_back(arr2, buffer);
                         }
                     }
                     
                     DynamicArray* concatenated = dyn_array_concat(arr, arr2);
                     if (concatenated) {
                         printf("Результат конкатенации:\n");
-                        print_string_array(concatenated);
+                        dyn_array_print(concatenated);
                         dyn_array_destroy(concatenated);
                     } else {
                         printf("Ошибка конкатенации.\n");
@@ -563,8 +527,7 @@ void string_array_menu() {
  *******************************************************************/
 
 int main() {
-    int choice;
-    int running = 1;
+    int running = 1; 
     
     printf("===== ДИНАМИЧЕСКИЙ МАССИВ НА СИ =====\n\n");
     
@@ -574,11 +537,15 @@ int main() {
         printf("2. Работа с массивом строк (char*)\n");
         printf("0. Выход из программы\n");
         printf("\nВыберите тип массива: ");
-        
+
+        int choice = -1;
+
         if (scanf("%d", &choice) != 1) {
             while (getchar() != '\n');
             continue;
         }
+
+        while (getchar() != '\n'); // Immediately clear the buffer
         
         switch (choice) {
             case 1:

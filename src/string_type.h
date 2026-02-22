@@ -3,9 +3,13 @@
 #include "type_info.h"
 
 const TypeInfo* ofString();
-int string_compare_asc(const void *left, const void *right); // static в определении
-int string_compare_desc(const void *left, const void *right);
-void string_copy(void *dest, const void *src);
-void string_destroy(void *data);
+
+// Map
+void string_map_to_upper(void* dest, const void* src);
+void string_map_to_lower(void* dest, const void* src);
+
+// Where
+int string_not_empty(const void* elem);
+int string_starts_with_a(const void* elem);
 
 #endif // STRING_TYPE_H

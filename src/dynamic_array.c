@@ -1,6 +1,14 @@
 #include "dynamic_array.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
+
+struct DynamicArray {    
+    size_t size;
+    size_t capacity;
+    void *data;
+    const TypeInfo *type; // pointer to const
+};
 
 // Creates a new array
 DynamicArray* dyn_array_create(const TypeInfo* type) {
@@ -53,7 +61,7 @@ int dyn_array_push_back(DynamicArray* arr, const void* value) {
     
     // Copy the element in the end of the array
     void* dest = (char*)arr->data + (arr->size * arr->type->item_size);
-    arr->type->copy(dest, value);
+    arr->type->create(dest, value); // Use exactly create (give a value, not pointer to value)
     arr->size++;
     
     return 0;
@@ -91,18 +99,52 @@ size_t dyn_array_capacity(const DynamicArray* arr) {
     return arr ? arr->capacity : 0;
 }
 
+// Returns the type of the array
+const TypeInfo* dyn_array_type(const DynamicArray* arr) {
+    return arr ? arr->type : NULL;
+}
+
 // Ascending sort
 void dyn_array_sort_asc(DynamicArray* arr) {
-    if (!arr || !arr->type || !arr->type->compare_asc || arr->size <= 1) return;
-    qsort(arr->data, arr->size, arr->type->item_size, arr->type->compare_asc);
+    if (!arr || !arr->type || !arr->type->compare || arr->size <= 1) return;
+    qsort(arr->data, arr->size, arr->type->item_size, arr->type->compare);
+}
+
+// Pointer to any compare function
+static int (*type_compare)(const void*, const void*) = NULL;
+
+// Adapter uses the general type's compare function for descending compare
+static int compare_desc_adapter(const void* a, const void* b) {
+    // Descending means swapping the arguments
+    return type_compare(b, a);
 }
 
 // Descending sort
 void dyn_array_sort_desc(DynamicArray* arr) {
-    if (!arr || !arr->type || !arr->type->compare_desc || arr->size <= 1) return;
-    qsort(arr->data, arr->size, arr->type->item_size, arr->type->compare_desc);
+    if (!arr || !arr->type || !arr->type->compare || arr->size <= 1) return;
+
+    type_compare = arr->type->compare;
+    qsort(arr->data, arr->size, arr->type->item_size, compare_desc_adapter);
+    type_compare = NULL;
+
 }
 
+void dyn_array_print(const DynamicArray* arr) {
+    if (!arr || !arr->type || !arr->type->print) 
+        return;
+    if (arr->size == 0) { 
+        printf("[]\n");
+        return; 
+    }
+
+    printf("[");
+    for (size_t i = 0; i < arr->size; i++) {
+        const void* elem = (const char*)arr->data + i * arr->type->item_size;
+        arr->type->print(elem);
+        if (i < arr->size - 1) printf(", ");
+    }
+    printf("]\n");
+}
 
 int dyn_array_shrink_to_fit(DynamicArray* arr) {
     if (!arr || arr->size == 0) {
@@ -138,13 +180,14 @@ DynamicArray* dyn_array_concat(const DynamicArray* a, const DynamicArray* b) {
         return NULL;
     }
     result->capacity = total;
-    result->size = total;
+    result->size = 0; // Set at 0 and increase in process to have current size if the copy fails
     
     // Copy from the first arr
     for (size_t i = 0; i < a->size; i++) {
         void* src = (char*)a->data + (i * a->type->item_size);
         void* dst = (char*)result->data + (i * a->type->item_size);
         a->type->copy(dst, src);
+        result->size++;
     }
     
     // Copy from the second arr
@@ -152,6 +195,7 @@ DynamicArray* dyn_array_concat(const DynamicArray* a, const DynamicArray* b) {
         void* src = (char*)b->data + (i * b->type->item_size);
         void* dst = (char*)result->data + ((a->size + i) * b->type->item_size); // already include the first copy size
         b->type->copy(dst, src);
+        result->size++;
     }
     
     return result;
@@ -171,13 +215,14 @@ DynamicArray* dyn_array_map(const DynamicArray* arr, MapFunc mapper) {
         dyn_array_destroy(result);
         return NULL;
     }
-    result->size = arr->size;
+    result->size = 0; // Set at 0 and increase in process to have current size if the copy fails
     result->capacity = arr->size;
     
     for (size_t i = 0; i < arr->size; i++) {
         void* src = (char*)arr->data + (i * arr->type->item_size);
         void* dst = (char*)result->data + (i * arr->type->item_size);
         mapper(dst, src);   // Mapper makes the map and transports at the same time
+        result->size++;
     }
     
     return result;

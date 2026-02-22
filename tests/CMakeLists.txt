@@ -7,7 +7,6 @@ add_executable(test_dynamic_array
     ../src/dynamic_array.c
     ../src/real_type.c
     ../src/string_type.c
-    ../src/mappers.c
 )
 
 # Регистрируем тест для ctest
