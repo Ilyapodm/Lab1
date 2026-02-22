@@ -2,7 +2,7 @@
 
 #include "type_info.h"
 
-// Initializing the field of TypeInfo for Real numbers
+// Initializing the fields of TypeInfo for Real numbers
 static const TypeInfo RealType = { // static
     .item_size = sizeof(double),
 

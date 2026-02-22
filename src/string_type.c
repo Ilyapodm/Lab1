@@ -4,9 +4,10 @@
 #include <string.h>
 #include "type_info.h"
 
-// Initializing the field of TypeInfo for Strings
+
+// Initializing the fields of TypeInfo for Strings
 static const TypeInfo StringType = {
-    .item_size = sizeof(char*), // 8 bytes, not a 
+    .item_size = sizeof(char*), // 8 bytes, not a string actually
 
     .compare_asc = string_compare_asc,
     .compare_desc = string_compare_desc,
@@ -19,12 +20,12 @@ const TypeInfo* ofString() {
     return &StringType;
 }
 
-
+// Compares for Strings
 int string_compare_asc(const void *left, const void *right) {
     const char *str_left = *(char**)left;
     const char *str_right = *(char**)right;
 
-    if (!str_left && !str_right) // ??
+    if (!str_left && !str_right) 
         return 0;
     if (!str_left)
         return -1;
@@ -59,7 +60,6 @@ void string_copy(void *dest, const void *src) {
     else   
         *dest_str = NULL;
 }
-
 
 void string_destroy(void *data) {
     char *str = *(char**)data;

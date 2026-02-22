@@ -3,7 +3,7 @@
 
 #include "type_info.h"
 
-typedef struct {
+typedef struct {    // Инкапсуляция: определение в С файл
     size_t size;
     size_t capacity;
     void *data;

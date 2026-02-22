@@ -10,6 +10,8 @@
 /********************************************************************
  *Utils for Real Numbers 
  *******************************************************************/
+
+// TODO Вывод/ввод лучше реализовать в самом объекте поле (typeinfo) (набор принтеров в разные места)
 void print_real_array(const DynamicArray* arr) {
     if (!arr || arr->size == 0) {
         printf("Массив пуст.\n");
@@ -174,7 +176,7 @@ void double_array_menu() {
         return;
     }
     
-    int choice;
+    int choice = -1;
     int running = 1;
     
     while (running) {
@@ -199,10 +201,12 @@ void double_array_menu() {
         printf("0. Выйти (массив будет уничтожен)\n");
         printf("\nВыберите действие: ");
         
+        // choice написать сюда 
         if (scanf("%d", &choice) != 1) {
             while (getchar() != '\n');
             continue;
         }
+
         
         switch (choice) {
             case 1:
