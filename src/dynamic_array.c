@@ -1,4 +1,5 @@
 #include "dynamic_array.h"
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -126,7 +127,69 @@ void dyn_array_sort_desc(DynamicArray* arr) {
     type_compare = arr->type->compare;
     qsort(arr->data, arr->size, arr->type->item_size, compare_desc_adapter);
     type_compare = NULL;
+}
 
+static void merge(DynamicArray *arr, size_t left, size_t mid, size_t right) {
+    size_t size_left = mid - left + 1;
+    size_t size_right = right - mid;
+    size_t item_size = arr->type->item_size;
+
+    // Create 2 buffers for each subarray
+    void *buf_left = malloc(item_size * size_left);
+    void *buf_right = malloc(item_size * size_right);
+    
+    // Fallback
+    if (!buf_left || !buf_right) {
+        free(buf_left);
+        free(buf_right);
+        return;
+    }
+
+    // Copy from arr to buffers
+    memcpy(buf_left, (char*)arr->data + left * item_size, item_size * size_left);
+    memcpy(buf_right, (char*)arr->data + (mid + 1) * item_size, item_size * size_right);
+
+    size_t left_index = 0, right_index = 0, arr_index = left;
+    while(left_index < size_left && right_index < size_right) {
+        void *left_item = (char*)buf_left + left_index * item_size;
+        void *right_item = (char*)buf_right + right_index * item_size;
+
+        if (arr->type->compare(left_item, right_item)) {
+            memcpy((char*)arr->data + arr_index * item_size, (char*)buf_left + left_index * item_size, item_size);
+            arr_index++;
+            left_index++;
+        }
+
+        else {
+            memcpy((char*)arr->data + arr_index * item_size, (char*)buf_right + right_index * item_size, item_size);
+            arr_index++;
+            right_index++;
+        }
+    }
+
+    // On of the buffers is empty, have to clear the other
+    while(left_index < size_left) {
+        memcpy((char*)arr->data + arr_index * item_size, (char*)buf_left + left_index * item_size, item_size);
+            arr_index++;
+            left_index++;
+    }
+
+    while (right_index < size_right) {
+        memcpy((char*)arr->data + arr_index * item_size, (char*)buf_right + right_index * item_size, item_size);
+            arr_index++;
+            right_index++;
+    }
+
+    free(buf_left);
+    free(buf_right);
+}
+
+void dyn_array_merge_sort(DynamicArray *arr, size_t left, size_t right) {
+    if (left >= right) return;
+    size_t mid = left + (right - left) / 2;
+    dyn_array_merge_sort(arr, left, mid);
+    dyn_array_merge_sort(arr, mid + 1, right);
+    merge(arr, left, mid, right);
 }
 
 void dyn_array_print(const DynamicArray* arr) {
@@ -184,8 +247,8 @@ DynamicArray* dyn_array_concat(const DynamicArray* a, const DynamicArray* b) {
     
     // Copy from the first arr
     for (size_t i = 0; i < a->size; i++) {
-        void* src = (char*)a->data + (i * a->type->item_size);
-        void* dst = (char*)result->data + (i * a->type->item_size);
+        void *src = (char*)a->data + (i * a->type->item_size);
+        void *dst = (char*)result->data + (i * a->type->item_size);
         a->type->copy(dst, src);
         result->size++;
     }

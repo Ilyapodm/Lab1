@@ -2,6 +2,7 @@
 #define DYNAMIC_ARRAY_H
 
 #include "type_info.h"
+#include <stddef.h>
 
 typedef struct DynamicArray DynamicArray;
 
@@ -22,6 +23,7 @@ const TypeInfo* dyn_array_type(const DynamicArray* arr);
 // Dynamic Array's sorts
 void dyn_array_sort_asc(DynamicArray *arr);
 void dyn_array_sort_desc(DynamicArray *arr);
+void dyn_array_merge_sort(DynamicArray *arr, size_t left, size_t right); // My sort
 
 // Dynamic Array's print
 void dyn_array_print(const DynamicArray* arr);

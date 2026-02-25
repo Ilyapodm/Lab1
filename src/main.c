@@ -2,9 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <time.h>
 #include "dynamic_array.h"
 #include "real_type.h"
 #include "string_type.h"
+
+#define MAX_ARRAY_SIZE 100000000ULL
 
 /********************************************************************
  *Utils for Real Numbers 
@@ -523,10 +526,167 @@ void string_array_menu() {
 }
 
 /********************************************************************
+ * Sort compare
+ *******************************************************************/
+
+void compare_sort_real(unsigned long long size) {
+    DynamicArray* merge_sort_arr = dyn_array_create(ofReal());
+    DynamicArray* qsort_arr = dyn_array_create(ofReal());
+
+    // Adding a random number to 2 arrays
+    for (unsigned long long arr_index = 0; arr_index < size; arr_index++) {
+        double random_real = (double)rand() / RAND_MAX * 200000.0 - 100000.0;
+        dyn_array_push_back(merge_sort_arr, &random_real);
+        dyn_array_push_back(qsort_arr, &random_real);
+    }
+
+    printf("Выполняем merge sort\n");
+    // Measuring the merge sort time
+    clock_t start_merge_sort = clock();
+    dyn_array_merge_sort(merge_sort_arr, 0, size-1);
+    clock_t end_merge_sort = clock();
+    double time_merge_sort = (double)(end_merge_sort - start_merge_sort) / CLOCKS_PER_SEC;
+    
+    printf("Выполняем qsort\n");
+    // Measuring the qsort time
+    clock_t start_qsort = clock();
+    dyn_array_sort_asc(qsort_arr);
+    clock_t end_qsort = clock();
+    double time_qsort = (double)(end_qsort - start_qsort) / CLOCKS_PER_SEC;
+
+    dyn_array_destroy(merge_sort_arr);
+    dyn_array_destroy(qsort_arr);
+
+    printf("Время моей merge sort для %llu действительных чисел: %.6f сек\n", size, time_merge_sort);
+    printf("Время встроенной qsort для %llu действительных чисел: %.6f сек\n", size, time_qsort);
+    if (time_merge_sort > time_qsort) 
+        printf("Qsort для %llu действительных чисел была выполнена быстрее, чем merge sort на %f секунд\n", size, time_merge_sort - time_qsort);
+    else 
+        printf("Merge sort для %llu действительных чисел была выполнена быстрее, чем qsort на %f секунд\n", size, time_qsort - time_merge_sort);
+    wait_for_enter();
+}
+
+void compare_sort_string(unsigned long long size) {
+    DynamicArray* merge_sort_arr = dyn_array_create(ofString());
+    DynamicArray* qsort_arr = dyn_array_create(ofString());
+
+    srand(time(NULL));
+
+    const char charset[] =
+        "abcdefghijklmnopqrstuvwxyz"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "0123456789";
+
+        int charset_size = strlen(charset);
+
+        char random_string[11]; // Random word
+
+    for (unsigned long long arr_index = 0; arr_index < size; arr_index++) {
+        // Randomize a len of the string (1-10) + 1 symbol for '\0'
+        int string_len = (rand() % 10) + 1;
+
+        int symbol = 0;
+        for (; symbol < string_len; symbol++){
+            random_string[symbol] = charset[rand() % charset_size];
+        }
+
+        random_string[symbol] = '\0';
+
+        dyn_array_push_back(merge_sort_arr, random_string); 
+        dyn_array_push_back(qsort_arr, random_string);
+    }
+
+    printf("Выполняем merge sort\n");
+    clock_t start_merge_sort = clock();
+    dyn_array_merge_sort(merge_sort_arr, 0, size-1);
+    clock_t end_merge_sort = clock();
+    double time_merge_sort = (double)(end_merge_sort - start_merge_sort) / CLOCKS_PER_SEC;
+    
+
+    printf("Выполняем qsort\n");
+    clock_t start_qsort = clock();
+    dyn_array_sort_asc(qsort_arr);
+    clock_t end_qsort = clock();
+    double time_qsort = (double)(end_qsort - start_qsort) / CLOCKS_PER_SEC;
+
+    dyn_array_destroy(merge_sort_arr);
+    dyn_array_destroy(qsort_arr);
+
+    printf("Время моей merge sort для %llu строк: %.6f сек\n", size, time_merge_sort);
+    printf("Время встроенной qsort для %llu строк: %.6f сек\n", size, time_qsort);
+    if (time_merge_sort > time_qsort) 
+        printf("Qsort для %llu строк была выполнена быстрее, чем merge sort на %f секунд\n", size, time_merge_sort - time_qsort);
+    else 
+        printf("Merge sort для %llu строк была выполнена быстрее, чем qsort на %f секунд\n", size, time_qsort - time_merge_sort);
+    wait_for_enter();
+}
+
+void compare_sort() {
+    int running = 1;
+    
+    while (running) {
+        long long size = 1000000;
+        clear_screen();
+        printf("Сравнение сортировок merge sort и qsort для n элементов\n");
+        printf("Введите количество элементов в массивах или 0 для выхода в меню:\n");
+        if (scanf("%lld", &size) != 1 || size > MAX_ARRAY_SIZE) {
+            while (getchar() != '\n');
+            printf("Введите положительное число!\n");
+            continue;
+        }
+
+        if (size < 0) {
+            printf("Введите положительное число!\n");
+            wait_for_enter();
+            continue;
+        }
+
+        if (size == 0) {
+            running = 0;
+            break;
+        }
+
+        printf("\n1. Вещественные числа (double)\n");
+        printf("2. Строки (char *)\n");
+        printf("0. Выйти\n");
+        printf("Выберете тип данных для массивов:\n");
+
+        int choice = -1;
+            
+        if (scanf("%d", &choice) != 1) {
+            while (getchar() != '\n');
+            continue;
+        }
+            
+        // Clear the buffer
+        while (getchar() != '\n');
+        
+        switch (choice) {
+            case 1:
+                compare_sort_real(size);
+                break;
+                
+            case 2:
+                compare_sort_string(size);
+                break;
+
+            case 0:
+                running = 0;
+                break;
+
+            default:
+                printf("Неверный выбор!\n");
+                wait_for_enter();
+        }
+    }
+}
+
+/********************************************************************
  * Main Menu
  *******************************************************************/
 
 int main() {
+    srand(time(NULL)); // for compare
     int running = 1; 
     
     printf("===== ДИНАМИЧЕСКИЙ МАССИВ НА СИ =====\n\n");
@@ -535,6 +695,7 @@ int main() {
         printf("\nГлавное меню:\n");
         printf("1. Работа с массивом чисел (double)\n");
         printf("2. Работа с массивом строк (char*)\n");
+        printf("3. (Бонус) Сравнение времени работы merge sort и qsort\n");
         printf("0. Выход из программы\n");
         printf("\nВыберите тип массива: ");
 
@@ -554,6 +715,10 @@ int main() {
                 
             case 2:
                 string_array_menu();
+                break;
+
+            case 3:
+                compare_sort();
                 break;
                 
             case 0:
