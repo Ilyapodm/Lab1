@@ -1,4 +1,4 @@
-# Исполняемый файл из всех .c 
+# Executable from all .c
 add_executable(Lab1
     main.c
     dynamic_array.c

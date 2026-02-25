@@ -1,7 +1,7 @@
-# Путь к заголовочным файлам из src
+# Files from /src 
 include_directories(../src)
 
-# Тест из тестового файла + всех .c файлов
+# Creating a test
 add_executable(test_dynamic_array
     test_dynamic_array.c
     ../src/dynamic_array.c
@@ -9,5 +9,5 @@ add_executable(test_dynamic_array
     ../src/string_type.c
 )
 
-# Регистрируем тест для ctest
+# Register for ctest
 add_test(NAME test_dynamic_array COMMAND test_dynamic_array)

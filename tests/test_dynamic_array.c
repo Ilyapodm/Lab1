@@ -369,6 +369,58 @@ void test_where_string() {
     printf(" OK\n");
 }
 
+// Test 15: Concatination (string)
+void test_concat_string() {
+    printf("Test 15: Concat (string)...");
+    
+    DynamicArray* arr1 = dyn_array_create(ofString());
+    DynamicArray* arr2 = dyn_array_create(ofString());
+    
+    char* vals1[] = {"Hello", "Banana"};
+    char* vals2[] = {"Apple", "Dog", "Python"};
+
+    for (int i = 0; i < 2; i++)
+        dyn_array_push_back(arr1, vals1[i]);
+    for (int i = 0; i < 3; i++)
+        dyn_array_push_back(arr2, vals2[i]);
+
+    DynamicArray* concatenated = dyn_array_concat(arr1, arr2);
+    assert(concatenated != NULL);
+    assert(dyn_array_size(concatenated) == 5);
+
+    const char* const* elem;
+    elem = dyn_array_get(concatenated, 0); assert(strcmp(*elem, "Hello")  == 0);
+    elem = dyn_array_get(concatenated, 1); assert(strcmp(*elem, "Banana") == 0);
+    elem = dyn_array_get(concatenated, 2); assert(strcmp(*elem, "Apple")  == 0);
+    elem = dyn_array_get(concatenated, 3); assert(strcmp(*elem, "Dog")    == 0);
+    elem = dyn_array_get(concatenated, 4); assert(strcmp(*elem, "Python") == 0);
+
+    dyn_array_destroy(arr1);
+    dyn_array_destroy(arr2);
+    dyn_array_destroy(concatenated);
+    printf(" OK\n");
+}
+
+// Test 16: Shrink to fit (real)
+void test_shrink_to_fit_string() {
+    printf("Test 16: Shrink to fit (string)...");
+    
+    DynamicArray* arr = dyn_array_create(ofString());
+    
+    char val[] = "Hello";
+    for (int i = 0; i < 3; i++) {
+        dyn_array_push_back(arr, val);
+    }
+    
+    int result = dyn_array_shrink_to_fit(arr);
+    assert(result == 1);
+    assert(dyn_array_capacity(arr) == dyn_array_size(arr));
+    assert(dyn_array_capacity(arr) == 3);
+    
+    dyn_array_destroy(arr);
+    printf(" OK\n");
+}
+
 // Main function
 int main() {
     printf("========================================\n");
@@ -390,6 +442,8 @@ int main() {
     test_sort_string();
     test_map_string();
     test_where_string();
+    test_concat_string();
+    test_shrink_to_fit_string();
     
     printf("\n========================================\n");
     printf("  ВСЕ ТЕСТЫ ПРОЙДЕНЫ!\n");

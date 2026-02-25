@@ -1,5 +1,6 @@
 #ifndef STRING_TYPE_H
 #define STRING_TYPE_H
+
 #include "type_info.h"
 
 const TypeInfo* ofString();
