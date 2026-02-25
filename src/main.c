@@ -632,6 +632,7 @@ void compare_sort() {
         if (scanf("%lld", &size) != 1 || size > MAX_ARRAY_SIZE) {
             while (getchar() != '\n');
             printf("Введите положительное число!\n");
+            wait_for_enter();
             continue;
         }
 
