@@ -622,6 +622,7 @@ void compare_sort_string(unsigned long long size) {
 }
 
 void compare_sort() {
+    srand(time(NULL));
     int running = 1;
     
     while (running) {
@@ -687,7 +688,6 @@ void compare_sort() {
  *******************************************************************/
 
 int main() {
-    srand(time(NULL)); // for compare
     int running = 1; 
     
     printf("===== ДИНАМИЧЕСКИЙ МАССИВ НА СИ =====\n\n");
